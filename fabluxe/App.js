@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { subscribeToAuth } from './src/utils/authService';
+import { restoreSession } from './src/utils/authService';
 import LoginScreen from './src/screens/LoginScreen';
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/config/theme';
 
 export default function App() {
-  const [user, setUser] = useState(undefined); // undefined = loading
+  const [user, setUser] = useState(undefined); // undefined = still loading
 
   useEffect(() => {
-    const unsub = subscribeToAuth(u => setUser(u));
-    return unsub;
+    restoreSession().then(session => setUser(session || null));
   }, []);
 
   if (user === undefined) {
@@ -35,5 +34,8 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.primary },
+  loading: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: COLORS.primary,
+  },
 });

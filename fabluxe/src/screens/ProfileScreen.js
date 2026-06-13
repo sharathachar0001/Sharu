@@ -10,7 +10,7 @@ export default function ProfileScreen({ user, onLogout }) {
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign Out', style: 'destructive', onPress: async () => {
-          await logout();
+          await logout(user?.isFirebaseUser);
           onLogout();
         },
       },
