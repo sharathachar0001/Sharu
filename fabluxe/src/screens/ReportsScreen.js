@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  RefreshControl, Share,
+  RefreshControl, Share, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS } from '../config/theme';
 import { getAllVisitors, VISITOR_STATUS, VISIT_SOURCES } from '../utils/visitorService';
-import { format, startOfWeek, eachDayOfInterval, endOfWeek } from 'date-fns';
+import { exportToExcel, exportToPDF } from '../utils/exportService';
+import { format } from 'date-fns';
 
 export default function ReportsScreen() {
   const [visitors, setVisitors] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [range, setRange] = useState(7);
+  const [exporting, setExporting] = useState(null); // 'excel' | 'pdf' | null
 
   async function load() {
     setRefreshing(true);
@@ -54,20 +56,28 @@ export default function ReportsScreen() {
     dailyMap[key] = (dailyMap[key] || 0) + 1;
   });
 
-  async function shareReport() {
-    const text = [
-      `FABLUXE Visitor Report`,
-      `Period: Last ${range} days`,
-      `Total Visitors: ${total}`,
-      `Converted: ${converted} (${convRate}%)`,
-      ``,
-      `Top Sources:`,
-      ...topSources.map(([s, c]) => `  ${s}: ${c}`),
-      ``,
-      `Top Interests:`,
-      ...topPurposes.map(([p, c]) => `  ${p}: ${c}`),
-    ].join('\n');
-    await Share.share({ message: text, title: 'FABLUXE Report' });
+  async function handleExcel() {
+    if (!visitors.length) return Alert.alert('No Data', 'No visitors found for this period.');
+    setExporting('excel');
+    try {
+      await exportToExcel(visitors, `Last ${range} days`);
+    } catch (e) {
+      Alert.alert('Export Failed', e.message);
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function handlePDF() {
+    if (!visitors.length) return Alert.alert('No Data', 'No visitors found for this period.');
+    setExporting('pdf');
+    try {
+      await exportToPDF(visitors, `Last ${range} days`);
+    } catch (e) {
+      Alert.alert('Export Failed', e.message);
+    } finally {
+      setExporting(null);
+    }
   }
 
   return (
@@ -77,10 +87,20 @@ export default function ReportsScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Reports & Analytics</Text>
-        <TouchableOpacity style={styles.shareBtn} onPress={shareReport}>
-          <Ionicons name="share-outline" size={20} color={COLORS.primary} />
-          <Text style={styles.shareText}>Share</Text>
-        </TouchableOpacity>
+        <View style={styles.exportBtns}>
+          <TouchableOpacity style={styles.exportBtn} onPress={handleExcel} disabled={!!exporting}>
+            {exporting === 'excel'
+              ? <ActivityIndicator size="small" color={COLORS.primary} />
+              : <><Ionicons name="document-text-outline" size={16} color={COLORS.primary} /><Text style={styles.exportText}>Excel</Text></>
+            }
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.exportBtn, styles.exportBtnPDF]} onPress={handlePDF} disabled={!!exporting}>
+            {exporting === 'pdf'
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <><Ionicons name="document-outline" size={16} color="#fff" /><Text style={[styles.exportText, { color: '#fff' }]}>PDF</Text></>
+            }
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.rangeRow}>
@@ -170,12 +190,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
   headerTitle: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  shareBtn: {
+  exportBtns: { flexDirection: 'row', gap: SPACING.sm },
+  exportBtn: {
     backgroundColor: COLORS.accent, flexDirection: 'row', alignItems: 'center',
-    gap: 4, paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
-    borderRadius: RADIUS.sm,
+    gap: 4, paddingHorizontal: SPACING.sm + 2, paddingVertical: SPACING.sm,
+    borderRadius: RADIUS.sm, minWidth: 70, justifyContent: 'center',
   },
-  shareText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
+  exportBtnPDF: { backgroundColor: '#D32F2F' },
+  exportText: { color: COLORS.primary, fontWeight: '700', fontSize: 12 },
   rangeRow: {
     flexDirection: 'row', margin: SPACING.md, gap: SPACING.sm,
   },
