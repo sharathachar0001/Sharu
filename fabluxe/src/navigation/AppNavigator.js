@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../config/theme';
+import { colors } from '../config/theme';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import CheckInScreen from '../screens/CheckInScreen';
@@ -38,13 +38,21 @@ export default function AppNavigator({ user, onLogout }) {
             const [active, inactive] = ICONS[route.name] || ['ellipse', 'ellipse-outline'];
             return <Ionicons name={focused ? active : inactive} size={size} color={color} />;
           },
-          tabBarActiveTintColor: COLORS.accent,
-          tabBarInactiveTintColor: COLORS.textLight,
-          tabBarStyle: { backgroundColor: COLORS.primary, borderTopColor: '#2A2A4A', height: 60 },
-          tabBarLabelStyle: { fontSize: 9, fontWeight: '600', marginBottom: 4 },
-          headerStyle: { backgroundColor: COLORS.primary },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: '700', letterSpacing: 0.5 },
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.outlineVariant,
+          tabBarStyle: {
+            backgroundColor: 'rgba(17,19,23,0.97)',
+            borderTopWidth: 1, borderTopColor: 'rgba(233,193,118,0.15)',
+            paddingBottom: 8, paddingTop: 8, height: 70,
+          },
+          tabBarLabelStyle: {
+            fontFamily: 'Manrope_600SemiBold', fontSize: 10, letterSpacing: 0.5,
+          },
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.primary,
+          headerTitleStyle: {
+            fontFamily: 'PlayfairDisplay_700Bold', fontSize: 18, letterSpacing: 0.5,
+          },
         })}
       >
         {/* All roles */}

@@ -3,9 +3,10 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS } from '../config/theme';
-import { getAllVisitors, getFollowUps, VISITOR_STATUS } from '../utils/visitorService';
+import { colors, fonts, spacing, radius } from '../config/theme';
+import { getAllVisitors, VISITOR_STATUS } from '../utils/visitorService';
 import { format } from 'date-fns';
 
 export default function DashboardScreen({ user, navigation }) {
@@ -16,19 +17,15 @@ export default function DashboardScreen({ user, navigation }) {
     setRefreshing(true);
     try {
       const all = await getAllVisitors(7);
-      const today = new Date();
-      const todayStr = format(today, 'yyyy-MM-dd');
-
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
       const todayCount = all.filter(v => {
         const d = v.createdAt?.toDate?.() || new Date(v.createdAt);
         return format(d, 'yyyy-MM-dd') === todayStr;
       }).length;
-
       const converted = all.filter(v => v.status === VISITOR_STATUS.CONVERTED).length;
       const followUp = all.filter(
         v => v.status === VISITOR_STATUS.NEW || v.status === VISITOR_STATUS.FOLLOW_UP
       ).length;
-
       setStats({ today: todayCount, week: all.length, followUp, converted });
     } finally {
       setRefreshing(false);
@@ -37,59 +34,79 @@ export default function DashboardScreen({ user, navigation }) {
 
   useEffect(() => { load(); }, []);
 
-  const statCards = [
-    { label: "Today's Visitors", value: stats.today, icon: 'people', color: COLORS.accent },
-    { label: 'This Week', value: stats.week, icon: 'calendar', color: '#4A90D9' },
-    { label: 'Need Follow-Up', value: stats.followUp, icon: 'alarm', color: '#E07B39' },
-    { label: 'Converted', value: stats.converted, icon: 'checkmark-circle', color: COLORS.success },
+  const kpiCards = [
+    { label: "Today's Visitors", value: stats.today, color: colors.primary },
+    { label: 'This Week', value: stats.week, color: colors.tertiary },
+    { label: 'Follow-Ups', value: stats.followUp, color: colors.error },
+    { label: 'Converted', value: stats.converted, color: colors.success },
   ];
 
   const quickActions = [
-    { label: 'New Visitor', icon: 'person-add', screen: 'CheckIn', color: COLORS.accent },
-    { label: 'All Visitors', icon: 'list', screen: 'Visitors', color: '#4A90D9' },
-    { label: 'Follow-Ups', icon: 'alarm-outline', screen: 'FollowUp', color: '#E07B39' },
-    { label: 'Reports', icon: 'bar-chart', screen: 'Reports', color: '#7B68EE' },
+    { label: 'New Visitor', icon: 'person-add', screen: 'CheckIn' },
+    { label: 'All Visitors', icon: 'people-outline', screen: 'Visitors' },
+    { label: 'Follow-Ups', icon: 'alarm-outline', screen: 'FollowUp' },
+    { label: 'Reports', icon: 'bar-chart-outline', screen: 'Reports' },
   ];
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={colors.primary} />}
     >
+      <View style={styles.glowTR} pointerEvents="none" />
+
+      {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Good {getGreeting()}, {user?.name?.split(' ')[0]}!</Text>
+          <Text style={styles.headerLabel}>OPERATIONAL OVERVIEW</Text>
+          <Text style={styles.greeting}>
+            Good {getGreeting()},{' '}
+            <Text style={styles.greetingName}>{user?.name?.split(' ')[0]}.</Text>
+          </Text>
           <Text style={styles.date}>{format(new Date(), 'EEEE, dd MMMM yyyy')}</Text>
         </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{user?.role?.toUpperCase()}</Text>
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase()}</Text>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Overview</Text>
-      <View style={styles.statsGrid}>
-        {statCards.map((c, i) => (
-          <View key={i} style={[styles.statCard, { borderLeftColor: c.color }]}>
-            <Ionicons name={c.icon} size={24} color={c.color} />
-            <Text style={styles.statValue}>{c.value}</Text>
-            <Text style={styles.statLabel}>{c.label}</Text>
+      {/* KPI Cards */}
+      <View style={styles.kpiRow}>
+        {kpiCards.map((c, i) => (
+          <View key={i} style={styles.kpiCard}>
+            <Text style={[styles.kpiValue, { color: c.color }]}>{c.value}</Text>
+            <Text style={styles.kpiLabel}>{c.label}</Text>
           </View>
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
+      {/* New Check-In CTA */}
+      <TouchableOpacity onPress={() => navigation.navigate('CheckIn')} style={styles.ctaWrapper}>
+        <LinearGradient colors={['#e9c176', '#c9952e']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaBtn}>
+          <Ionicons name="person-add" size={18} color={colors.onPrimary} />
+          <Text style={styles.ctaBtnText}>NEW CHECK-IN</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* Quick Actions */}
+      <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
       <View style={styles.actionsGrid}>
         {quickActions.map((a, i) => (
           <TouchableOpacity
             key={i}
-            style={[styles.actionCard, { borderTopColor: a.color }]}
+            style={styles.actionCard}
             onPress={() => navigation.navigate(a.screen)}
           >
-            <Ionicons name={a.icon} size={28} color={a.color} />
+            <View style={styles.actionIcon}>
+              <Ionicons name={a.icon} size={22} color={colors.primary} />
+            </View>
             <Text style={styles.actionLabel}>{a.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
+
+      <View style={{ height: spacing.xxl }} />
     </ScrollView>
   );
 }
@@ -102,68 +119,84 @@ function getGreeting() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: colors.background },
+  glowTR: {
+    position: 'absolute', top: -80, right: -80,
+    width: 280, height: 280, borderRadius: 140,
+    backgroundColor: 'rgba(233,193,118,0.05)',
+  },
   header: {
-    backgroundColor: COLORS.primary,
-    padding: SPACING.lg,
-    paddingTop: SPACING.xl,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    padding: spacing.lg, paddingTop: spacing.xl,
+    borderBottomWidth: 1, borderBottomColor: colors.glassBorder,
   },
-  greeting: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  date: { color: COLORS.accentLight, fontSize: 13, marginTop: 2 },
-  badge: {
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
-    borderRadius: RADIUS.sm,
+  headerLabel: {
+    fontFamily: fonts.manrope.semiBold, fontSize: 10,
+    color: colors.primary, letterSpacing: 3, marginBottom: spacing.xs,
   },
-  badgeText: { color: COLORS.primary, fontSize: 11, fontWeight: '700' },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    margin: SPACING.md,
-    marginBottom: SPACING.sm,
+  greeting: {
+    fontFamily: fonts.playfair.bold, fontSize: 26,
+    color: colors.onSurface, marginBottom: 4,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.sm,
+  greetingName: { color: colors.primary, fontStyle: 'italic' },
+  date: {
+    fontFamily: fonts.manrope.regular, fontSize: 12,
+    color: colors.onSurfaceVariant,
   },
-  statCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    width: '47%',
-    borderLeftWidth: 4,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+  avatarCircle: {
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: 'rgba(233,193,118,0.12)',
+    borderWidth: 1, borderColor: colors.primary,
+    justifyContent: 'center', alignItems: 'center',
   },
-  statValue: { fontSize: 32, fontWeight: '800', color: COLORS.text, marginTop: SPACING.xs },
-  statLabel: { fontSize: 12, color: COLORS.textLight, marginTop: 2 },
+  avatarText: { fontFamily: fonts.manrope.bold, fontSize: 16, color: colors.primary },
+  kpiRow: {
+    flexDirection: 'row', flexWrap: 'wrap',
+    padding: spacing.lg, gap: spacing.sm,
+  },
+  kpiCard: {
+    flex: 1, minWidth: '45%',
+    backgroundColor: colors.glassBackground,
+    borderWidth: 1, borderColor: colors.glassBorder,
+    borderRadius: radius.lg, padding: spacing.md, alignItems: 'center',
+  },
+  kpiValue: { fontFamily: fonts.playfair.bold, fontSize: 32 },
+  kpiLabel: {
+    fontFamily: fonts.manrope.regular, fontSize: 10,
+    color: colors.onSurfaceVariant, textAlign: 'center', marginTop: 4,
+  },
+  ctaWrapper: { marginHorizontal: spacing.lg, marginBottom: spacing.lg, borderRadius: radius.full, overflow: 'hidden' },
+  ctaBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: spacing.sm, paddingVertical: 14, borderRadius: radius.full,
+  },
+  ctaBtnText: {
+    fontFamily: fonts.manrope.extraBold, fontSize: 13,
+    color: colors.onPrimary, letterSpacing: 2,
+  },
+  sectionLabel: {
+    fontFamily: fonts.manrope.semiBold, fontSize: 10,
+    color: colors.onSurfaceVariant, letterSpacing: 3,
+    marginHorizontal: spacing.lg, marginBottom: spacing.md,
+  },
   actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.sm,
-    paddingBottom: SPACING.xl,
+    flexDirection: 'row', flexWrap: 'wrap',
+    paddingHorizontal: spacing.lg, gap: spacing.sm,
   },
   actionCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.lg,
-    width: '47%',
-    alignItems: 'center',
-    borderTopWidth: 3,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    flex: 1, minWidth: '45%',
+    backgroundColor: colors.glassBackground,
+    borderWidth: 1, borderColor: colors.glassBorder,
+    borderRadius: radius.lg, padding: spacing.lg,
+    alignItems: 'center', gap: spacing.sm,
   },
-  actionLabel: { fontSize: 13, fontWeight: '600', color: COLORS.text, marginTop: SPACING.sm },
+  actionIcon: {
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: 'rgba(233,193,118,0.1)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  actionLabel: {
+    fontFamily: fonts.manrope.semiBold, fontSize: 12,
+    color: colors.onSurface, textAlign: 'center',
+  },
 });

@@ -1,26 +1,25 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS } from '../config/theme';
+import { colors, fonts, spacing, radius } from '../config/theme';
 import { staffLogin, adminLogin } from '../utils/authService';
 
 export default function LoginScreen({ onLogin }) {
-  const [mode, setMode] = useState('staff'); // 'staff' | 'admin'
-
-  // Staff fields
+  const [mode, setMode] = useState('staff');
   const [staffName, setStaffName] = useState('');
   const [pin, setPin] = useState(['', '', '', '']);
   const pinRefs = [useRef(), useRef(), useRef(), useRef()];
-
-  // Admin fields
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [showPass, setShowPass] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const [focusedName, setFocusedName] = useState(false);
+  const [focusedEmail, setFocusedEmail] = useState(false);
+  const [focusedPass, setFocusedPass] = useState(false);
 
   function handlePinChange(val, index) {
     const cleaned = val.replace(/\D/g, '').slice(-1);
@@ -64,237 +63,231 @@ export default function LoginScreen({ onLogin }) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* BG decorations */}
-      <View style={styles.circle1} />
-      <View style={styles.circle2} />
+      <View style={styles.glowTL} pointerEvents="none" />
+      <View style={styles.glowBR} pointerEvents="none" />
 
-      <View style={styles.card}>
-        {/* Brand */}
-        <Text style={styles.brand}>FABLUXE</Text>
-        <Text style={styles.tagline}>INTERIOR HOME SOLUTIONS</Text>
-        <View style={styles.goldLine} />
-
-        {/* Mode toggle */}
-        <View style={styles.toggle}>
-          <TouchableOpacity
-            style={[styles.toggleBtn, mode === 'staff' && styles.toggleActive]}
-            onPress={() => setMode('staff')}
-          >
-            <Ionicons
-              name="person-outline" size={14}
-              color={mode === 'staff' ? COLORS.accent : COLORS.textLight}
-            />
-            <Text style={[styles.toggleLabel, mode === 'staff' && styles.toggleLabelActive]}>
-              Staff Login
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleBtn, mode === 'admin' && styles.toggleActive]}
-            onPress={() => setMode('admin')}
-          >
-            <Ionicons
-              name="shield-outline" size={14}
-              color={mode === 'admin' ? COLORS.accent : COLORS.textLight}
-            />
-            <Text style={[styles.toggleLabel, mode === 'admin' && styles.toggleLabelActive]}>
-              Admin Login
-            </Text>
-          </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.brandSection}>
+          <Text style={styles.brand}>FABLUXE</Text>
+          <View style={styles.goldLine} />
+          <Text style={styles.tagline}>INTERIOR HOME SOLUTIONS</Text>
         </View>
 
-        {/* ── STAFF LOGIN ── */}
-        {mode === 'staff' ? (
-          <>
-            <Text style={styles.sectionLabel}>YOUR NAME</Text>
-            <View style={styles.inputRow}>
-              <Ionicons name="person-outline" size={18} color={COLORS.textLight} />
-              <TextInput
-                style={styles.input}
-                placeholder="e.g.  Sharath"
-                placeholderTextColor={COLORS.textLight}
-                value={staffName}
-                onChangeText={setStaffName}
-                autoCapitalize="words"
-                returnKeyType="next"
-              />
-            </View>
-
-            <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>4-DIGIT PIN</Text>
-            <View style={styles.pinRow}>
-              {pin.map((digit, i) => (
-                <TextInput
-                  key={i}
-                  ref={pinRefs[i]}
-                  style={[styles.pinBox, digit && styles.pinBoxFilled]}
-                  value={digit}
-                  onChangeText={v => handlePinChange(v, i)}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  secureTextEntry
-                  selectTextOnFocus
-                />
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={styles.btn}
-              onPress={handleStaffLogin}
-              disabled={loading}
-            >
-              {loading
-                ? <ActivityIndicator color={COLORS.primary} />
-                : <><Ionicons name="log-in-outline" size={20} color={COLORS.primary} /><Text style={styles.btnText}>Sign In</Text></>
-              }
-            </TouchableOpacity>
-
-            <View style={styles.hint}>
-              <Ionicons name="information-circle-outline" size={14} color={COLORS.textLight} />
-              <Text style={styles.hintText}>
-                Your name and PIN are set by your admin.{'\n'}
-                Contact admin if you can't log in.
-              </Text>
-            </View>
-          </>
-        ) : (
-          /* ── ADMIN LOGIN ── */
-          <>
-            <Text style={styles.sectionLabel}>EMAIL ADDRESS</Text>
-            <View style={styles.inputRow}>
-              <Ionicons name="mail-outline" size={18} color={COLORS.textLight} />
-              <TextInput
-                style={styles.input}
-                placeholder="admin@gmail.com"
-                placeholderTextColor={COLORS.textLight}
-                value={adminEmail}
-                onChangeText={setAdminEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                returnKeyType="next"
-              />
-            </View>
-
-            <Text style={[styles.sectionLabel, { marginTop: SPACING.md }]}>PASSWORD</Text>
-            <View style={styles.inputRow}>
-              <Ionicons name="lock-closed-outline" size={18} color={COLORS.textLight} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter password"
-                placeholderTextColor={COLORS.textLight}
-                value={adminPass}
-                onChangeText={setAdminPass}
-                secureTextEntry={!showPass}
-                returnKeyType="done"
-                onSubmitEditing={handleAdminLogin}
-              />
-              <TouchableOpacity onPress={() => setShowPass(v => !v)}>
+        <View style={styles.card}>
+          {/* Mode Toggle */}
+          <View style={styles.toggle}>
+            {['staff', 'admin'].map(m => (
+              <TouchableOpacity
+                key={m}
+                style={[styles.toggleBtn, mode === m && styles.toggleBtnActive]}
+                onPress={() => setMode(m)}
+              >
                 <Ionicons
-                  name={showPass ? 'eye-off-outline' : 'eye-outline'}
-                  size={18} color={COLORS.textLight}
+                  name={m === 'staff' ? 'person-outline' : 'shield-outline'}
+                  size={14}
+                  color={mode === m ? colors.primary : colors.outlineVariant}
                 />
+                <Text style={[styles.toggleLabel, mode === m && styles.toggleLabelActive]}>
+                  {m === 'staff' ? 'Staff Login' : 'Admin Login'}
+                </Text>
               </TouchableOpacity>
-            </View>
+            ))}
+          </View>
 
-            <TouchableOpacity
-              style={styles.btn}
-              onPress={handleAdminLogin}
-              disabled={loading}
-            >
-              {loading
-                ? <ActivityIndicator color={COLORS.primary} />
-                : <><Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} /><Text style={styles.btnText}>Admin Sign In</Text></>
-              }
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
+          {mode === 'staff' ? (
+            <>
+              <Text style={styles.sectionLabel}>YOUR NAME</Text>
+              <View style={[styles.underlineInput, focusedName && styles.underlineInputFocused]}>
+                <Ionicons name="person-outline" size={16} color={focusedName ? colors.primary : colors.outlineVariant} />
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="e.g. Sharath"
+                  placeholderTextColor={colors.outlineVariant}
+                  value={staffName}
+                  onChangeText={setStaffName}
+                  autoCapitalize="words"
+                  onFocus={() => setFocusedName(true)}
+                  onBlur={() => setFocusedName(false)}
+                />
+              </View>
 
-      <Text style={styles.footer}>FABLUXE Visitor Management  ·  v1.0</Text>
+              <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>4-DIGIT PIN</Text>
+              <View style={styles.pinRow}>
+                {pin.map((digit, i) => (
+                  <TextInput
+                    key={i}
+                    ref={pinRefs[i]}
+                    style={[styles.pinBox, digit && styles.pinBoxFilled]}
+                    value={digit}
+                    onChangeText={v => handlePinChange(v, i)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    secureTextEntry
+                    selectTextOnFocus
+                  />
+                ))}
+              </View>
+
+              <TouchableOpacity onPress={handleStaffLogin} disabled={loading} style={styles.btnWrapper}>
+                <LinearGradient colors={['#e9c176', '#c9952e']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.btn}>
+                  {loading ? <ActivityIndicator color={colors.onPrimary} /> : (
+                    <>
+                      <Ionicons name="log-in-outline" size={18} color={colors.onPrimary} />
+                      <Text style={styles.btnText}>SECURE ACCESS</Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <View style={styles.hint}>
+                <Ionicons name="information-circle-outline" size={13} color={colors.outlineVariant} />
+                <Text style={styles.hintText}>Your name and PIN are set by your admin. Contact admin if you can't log in.</Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.sectionLabel}>EMAIL ADDRESS</Text>
+              <View style={[styles.underlineInput, focusedEmail && styles.underlineInputFocused]}>
+                <Ionicons name="mail-outline" size={16} color={focusedEmail ? colors.primary : colors.outlineVariant} />
+                <TextInput
+                  style={styles.inputText}
+                  placeholder="admin@gmail.com"
+                  placeholderTextColor={colors.outlineVariant}
+                  value={adminEmail}
+                  onChangeText={setAdminEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onFocus={() => setFocusedEmail(true)}
+                  onBlur={() => setFocusedEmail(false)}
+                />
+              </View>
+
+              <Text style={[styles.sectionLabel, { marginTop: spacing.lg }]}>PASSWORD</Text>
+              <View style={[styles.underlineInput, focusedPass && styles.underlineInputFocused]}>
+                <Ionicons name="lock-closed-outline" size={16} color={focusedPass ? colors.primary : colors.outlineVariant} />
+                <TextInput
+                  style={[styles.inputText, { flex: 1 }]}
+                  placeholder="Enter password"
+                  placeholderTextColor={colors.outlineVariant}
+                  value={adminPass}
+                  onChangeText={setAdminPass}
+                  secureTextEntry={!showPass}
+                  onSubmitEditing={handleAdminLogin}
+                  onFocus={() => setFocusedPass(true)}
+                  onBlur={() => setFocusedPass(false)}
+                />
+                <TouchableOpacity onPress={() => setShowPass(v => !v)}>
+                  <Ionicons name={showPass ? 'eye-off-outline' : 'eye-outline'} size={16} color={colors.outlineVariant} />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity onPress={handleAdminLogin} disabled={loading} style={[styles.btnWrapper, { marginTop: spacing.xl }]}>
+                <LinearGradient colors={['#e9c176', '#c9952e']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.btn}>
+                  {loading ? <ActivityIndicator color={colors.onPrimary} /> : (
+                    <>
+                      <Ionicons name="shield-checkmark-outline" size={18} color={colors.onPrimary} />
+                      <Text style={styles.btnText}>ADMIN SIGN IN</Text>
+                    </>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        <Text style={styles.footer}>FABLUXE Visitor Management  ·  v1.0</Text>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1, backgroundColor: COLORS.primary,
-    justifyContent: 'center', padding: SPACING.lg,
+  container: { flex: 1, backgroundColor: colors.background },
+  glowTL: {
+    position: 'absolute', top: -100, left: -100,
+    width: 320, height: 320, borderRadius: 160,
+    backgroundColor: 'rgba(233,193,118,0.06)',
   },
-  circle1: {
-    position: 'absolute', width: 280, height: 280,
-    borderRadius: 140, backgroundColor: COLORS.accent,
-    top: -100, left: -100, opacity: 0.05,
+  glowBR: {
+    position: 'absolute', bottom: -80, right: -80,
+    width: 220, height: 220, borderRadius: 110,
+    backgroundColor: 'rgba(233,193,118,0.04)',
   },
-  circle2: {
-    position: 'absolute', width: 180, height: 180,
-    borderRadius: 90, backgroundColor: COLORS.accent,
-    bottom: 60, right: -60, opacity: 0.07,
-  },
-  card: {
-    backgroundColor: COLORS.surface, borderRadius: 28,
-    padding: SPACING.xl, borderTopWidth: 3, borderTopColor: COLORS.accent,
-    elevation: 20, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 20,
-  },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
+  brandSection: { alignItems: 'center', marginBottom: spacing.xl },
   brand: {
-    fontSize: 38, fontWeight: '800', color: COLORS.accent,
-    letterSpacing: 8, textAlign: 'center',
-  },
-  tagline: {
-    fontSize: 10, color: COLORS.textLight, letterSpacing: 2.5,
-    textAlign: 'center', marginTop: 4,
+    fontFamily: fonts.playfair.bold, fontSize: 42,
+    color: colors.primary, letterSpacing: 10,
   },
   goldLine: {
-    width: 40, height: 2, backgroundColor: COLORS.accent,
-    alignSelf: 'center', borderRadius: 2, marginVertical: SPACING.md,
+    width: 50, height: 1.5, backgroundColor: colors.primary,
+    marginVertical: spacing.md, opacity: 0.6,
+  },
+  tagline: {
+    fontFamily: fonts.manrope.semiBold, fontSize: 10,
+    color: colors.onSurfaceVariant, letterSpacing: 3,
+  },
+  card: {
+    backgroundColor: colors.glassBackground,
+    borderWidth: 1, borderColor: colors.glassBorder,
+    borderRadius: radius.xl, padding: spacing.xl,
   },
   toggle: {
-    flexDirection: 'row', backgroundColor: COLORS.background,
-    borderRadius: RADIUS.md, padding: 3, marginBottom: SPACING.lg,
+    flexDirection: 'row', backgroundColor: colors.surface,
+    borderRadius: radius.md, padding: 3, marginBottom: spacing.xl,
   },
   toggleBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, padding: SPACING.sm, borderRadius: RADIUS.sm - 2,
+    gap: 6, paddingVertical: spacing.sm, borderRadius: radius.sm,
   },
-  toggleActive: { backgroundColor: COLORS.primary },
-  toggleLabel: { fontSize: 12, fontWeight: '600', color: COLORS.textLight },
-  toggleLabelActive: { color: COLORS.accent },
+  toggleBtnActive: { backgroundColor: colors.surfaceContainer },
+  toggleLabel: { fontFamily: fonts.manrope.semiBold, fontSize: 12, color: colors.outlineVariant },
+  toggleLabelActive: { color: colors.primary },
   sectionLabel: {
-    fontSize: 10, fontWeight: '700', color: COLORS.textLight,
-    letterSpacing: 1.5, marginBottom: 8,
+    fontFamily: fonts.manrope.semiBold, fontSize: 10,
+    color: colors.onSurfaceVariant, letterSpacing: 2, marginBottom: spacing.sm,
   },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1.5, borderColor: COLORS.border, borderRadius: RADIUS.md,
-    backgroundColor: COLORS.background, paddingHorizontal: SPACING.md, gap: SPACING.sm,
+  underlineInput: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    borderBottomWidth: 1, borderBottomColor: colors.outlineVariant,
+    paddingBottom: spacing.sm,
   },
-  input: {
-    flex: 1, paddingVertical: SPACING.md,
-    color: COLORS.text, fontSize: 15,
+  underlineInputFocused: { borderBottomColor: colors.primary },
+  inputText: {
+    fontFamily: fonts.manrope.regular, fontSize: 15,
+    color: colors.onSurface, flex: 1, paddingVertical: 4,
   },
   pinRow: {
-    flexDirection: 'row', justifyContent: 'center', gap: SPACING.md, marginBottom: SPACING.lg,
+    flexDirection: 'row', justifyContent: 'center', gap: spacing.md, marginBottom: spacing.xl,
   },
   pinBox: {
-    width: 56, height: 64, borderWidth: 2, borderColor: COLORS.border,
-    borderRadius: RADIUS.md, textAlign: 'center', fontSize: 28, fontWeight: '700',
-    color: COLORS.text, backgroundColor: COLORS.background,
+    width: 60, height: 68, borderWidth: 1.5, borderColor: colors.outlineVariant,
+    borderRadius: radius.md, textAlign: 'center', fontSize: 28, fontWeight: '700',
+    color: colors.onSurface, backgroundColor: colors.surface,
   },
   pinBoxFilled: {
-    borderColor: COLORS.accent, backgroundColor: 'rgba(201,168,76,0.08)',
+    borderColor: colors.primary, backgroundColor: 'rgba(233,193,118,0.08)',
+    color: colors.primary,
   },
+  btnWrapper: { borderRadius: radius.full, overflow: 'hidden' },
   btn: {
-    backgroundColor: COLORS.accent, borderRadius: RADIUS.md,
-    padding: SPACING.md, flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'center', gap: SPACING.sm, marginTop: SPACING.sm,
-    elevation: 4, shadowColor: COLORS.accent, shadowOpacity: 0.4, shadowRadius: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: spacing.sm, paddingVertical: 16, borderRadius: radius.full,
   },
-  btnText: { color: COLORS.primary, fontWeight: '800', fontSize: 16 },
+  btnText: {
+    fontFamily: fonts.manrope.extraBold, fontSize: 13,
+    color: colors.onPrimary, letterSpacing: 3,
+  },
   hint: {
-    flexDirection: 'row', gap: 6, alignItems: 'flex-start',
-    backgroundColor: COLORS.background, borderRadius: RADIUS.sm,
-    padding: SPACING.sm, marginTop: SPACING.md,
+    flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: spacing.lg,
   },
-  hintText: { flex: 1, fontSize: 11, color: COLORS.textLight, lineHeight: 18 },
+  hintText: {
+    fontFamily: fonts.manrope.regular, fontSize: 11,
+    color: colors.outlineVariant, flex: 1, lineHeight: 16,
+  },
   footer: {
-    color: 'rgba(255,255,255,0.3)', textAlign: 'center',
-    fontSize: 10, letterSpacing: 1, marginTop: SPACING.lg,
+    fontFamily: fonts.manrope.regular, fontSize: 10,
+    color: 'rgba(209,197,180,0.3)', textAlign: 'center',
+    letterSpacing: 1, marginTop: spacing.xl,
   },
 });
