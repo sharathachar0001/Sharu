@@ -10,6 +10,7 @@ import FollowUpScreen from '../screens/FollowUpScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 import EODReportScreen from '../screens/EODReportScreen';
 import StaffScreen from '../screens/StaffScreen';
+import GreetingSettingsScreen from '../screens/GreetingSettingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -22,6 +23,7 @@ const ICONS = {
   Reports:   ['bar-chart',      'bar-chart-outline'],
   EOD:       ['send',           'send-outline'],
   Staff:     ['people-circle',  'people-circle-outline'],
+  Greeting:  ['chatbubble-ellipses', 'chatbubble-ellipses-outline'],
   Profile:   ['person-circle',  'person-circle-outline'],
 };
 
@@ -91,6 +93,12 @@ export default function AppNavigator({ user, onLogout }) {
         {isAdmin && (
           <Tab.Screen name="Staff">
             {props => <StaffScreen {...props} user={user} />}
+          </Tab.Screen>
+        )}
+
+        {isAdmin && (
+          <Tab.Screen name="Greeting" options={{ title: 'Greeting' }}>
+            {props => <GreetingSettingsScreen {...props} user={user} />}
           </Tab.Screen>
         )}
 

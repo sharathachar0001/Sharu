@@ -1,13 +1,18 @@
 import { EOD_CONFIG } from '../config/eodConfig';
-import { GREETING_TEMPLATES, ACTIVE_TEMPLATE } from '../config/greetingConfig';
+import { getGreetingSettings } from './settingsService';
 
 // ─── Build the greeting text for a visitor ───────────────────────────────────
-export function buildGreeting(visitor, staffName = 'our team') {
-  const template = GREETING_TEMPLATES[ACTIVE_TEMPLATE] || GREETING_TEMPLATES.warm;
-  return template.message
+export function fillTemplate(message, visitor, staffName = 'our team') {
+  return (message || '')
     .replace(/{name}/g, (visitor.name || 'Guest').split(' ')[0])
     .replace(/{showroom}/g, EOD_CONFIG.showroomName)
     .replace(/{staff}/g, staffName);
+}
+
+export async function buildGreeting(visitor, staffName = 'our team') {
+  const settings = await getGreetingSettings();
+  const message = settings.messages[settings.activeTemplate] || '';
+  return fillTemplate(message, visitor, staffName);
 }
 
 // ─── Normalise a phone number into WhatsApp format ───────────────────────────
@@ -35,7 +40,7 @@ export async function sendVisitorGreeting(visitor, staffName = 'our team') {
   const to = toWhatsAppNumber(visitor.phone);
   if (!to) throw new Error('Visitor has no valid phone number.');
 
-  const message = buildGreeting(visitor, staffName);
+  const message = await buildGreeting(visitor, staffName);
   const credentials = btoa(`${accountSid}:${authToken}`);
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 

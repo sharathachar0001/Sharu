@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS } from '../config/theme';
 import { addVisitor, VISIT_PURPOSES, VISIT_SOURCES } from '../utils/visitorService';
 import { sendVisitorGreeting } from '../utils/greetingService';
-import { ASK_BEFORE_SEND, ALLOW_ALL_STAFF } from '../config/greetingConfig';
+import { getGreetingSettings } from '../utils/settingsService';
 
 export default function CheckInScreen({ navigation, user }) {
   const [form, setForm] = useState({
@@ -30,10 +30,11 @@ export default function CheckInScreen({ navigation, user }) {
     }
   }
 
-  function offerGreeting(visitor) {
+  async function offerGreeting(visitor) {
     // Send/Skip choice — keeps repeat walk-ins from being spammed.
-    const canSend = ALLOW_ALL_STAFF || user?.role === 'manager' || user?.role === 'admin';
-    if (!ASK_BEFORE_SEND || !canSend) {
+    const settings = await getGreetingSettings();
+    const canSend = settings.allowAllStaff || user?.role === 'manager' || user?.role === 'admin';
+    if (!settings.askBeforeSend || !canSend) {
       return Alert.alert('Checked In ✓', `${visitor.name} has been checked in!`, [
         { text: 'Add Another', onPress: resetForm },
         { text: 'Go to Dashboard', onPress: () => navigation.navigate('Dashboard') },
