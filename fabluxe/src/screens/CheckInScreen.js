@@ -6,6 +6,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS } from '../config/theme';
 import { addVisitor, VISIT_PURPOSES, VISIT_SOURCES } from '../utils/visitorService';
+import { sendVisitorGreeting } from '../utils/greetingService';
+import { ASK_BEFORE_SEND, ALLOW_ALL_STAFF } from '../config/greetingConfig';
 
 export default function CheckInScreen({ navigation, user }) {
   const [form, setForm] = useState({
@@ -15,6 +17,41 @@ export default function CheckInScreen({ navigation, user }) {
 
   function set(field, val) { setForm(f => ({ ...f, [field]: val })); }
 
+  function resetForm() {
+    setForm({ name: '', phone: '', email: '', purpose: '', source: '', notes: '' });
+  }
+
+  async function sendGreeting(visitor) {
+    try {
+      await sendVisitorGreeting(visitor, user?.name || 'our team');
+      Alert.alert('Greeting Sent ✨', `A welcome message was sent to ${visitor.name} on WhatsApp.`);
+    } catch (e) {
+      Alert.alert('Could Not Send', e.message);
+    }
+  }
+
+  function offerGreeting(visitor) {
+    // Send/Skip choice — keeps repeat walk-ins from being spammed.
+    const canSend = ALLOW_ALL_STAFF || user?.role === 'manager' || user?.role === 'admin';
+    if (!ASK_BEFORE_SEND || !canSend) {
+      return Alert.alert('Checked In ✓', `${visitor.name} has been checked in!`, [
+        { text: 'Add Another', onPress: resetForm },
+        { text: 'Go to Dashboard', onPress: () => navigation.navigate('Dashboard') },
+      ]);
+    }
+    Alert.alert(
+      'Checked In ✓',
+      `${visitor.name} has been checked in.\n\nSend a welcome greeting on WhatsApp?`,
+      [
+        { text: 'Skip', style: 'cancel', onPress: resetForm },
+        {
+          text: 'Send Greeting',
+          onPress: async () => { await sendGreeting(visitor); resetForm(); },
+        },
+      ]
+    );
+  }
+
   async function handleSubmit() {
     if (!form.name.trim()) return Alert.alert('Required', 'Visitor name is required.');
     if (!form.phone.trim()) return Alert.alert('Required', 'Phone number is required.');
@@ -22,11 +59,9 @@ export default function CheckInScreen({ navigation, user }) {
 
     setLoading(true);
     try {
-      await addVisitor({ ...form, addedBy: user?.name || 'Staff', addedByUid: user?.uid });
-      Alert.alert('Success', `${form.name} has been checked in!`, [
-        { text: 'Add Another', onPress: () => setForm({ name: '', phone: '', email: '', purpose: '', source: '', notes: '' }) },
-        { text: 'Go to Dashboard', onPress: () => navigation.navigate('Dashboard') },
-      ]);
+      const visitor = { ...form };
+      await addVisitor({ ...visitor, addedBy: user?.name || 'Staff', addedByUid: user?.uid });
+      offerGreeting(visitor);
     } catch (e) {
       Alert.alert('Error', e.message);
     } finally {
