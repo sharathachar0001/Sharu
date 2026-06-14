@@ -50,6 +50,9 @@ export default function DashboardScreen({ user, navigation }) {
   const firstName = user?.name?.split(' ')[0] || 'there';
   const initials = (user?.name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+
   const filtered = recentVisitors.filter(v =>
     !search || (v.name || '').toLowerCase().includes(search.toLowerCase())
   );
@@ -77,7 +80,7 @@ export default function DashboardScreen({ user, navigation }) {
 
       {/* Welcome */}
       <Text style={styles.overviewLabel}>OPERATIONAL OVERVIEW</Text>
-      <Text style={styles.welcomeHeadline}>Welcome back, {firstName}.</Text>
+      <Text style={styles.welcomeHeadline}>{greeting}, {firstName}.</Text>
       <Text style={styles.dateText}>{format(new Date(), 'EEEE, dd MMMM yyyy')}</Text>
 
       {/* KPI Cards */}
