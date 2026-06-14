@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FABLUXE — Premium Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0a0b0d;
+    font-family:'Manrope',sans-serif;
+    color:#e2e2e7;
+    padding:40px 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:40px;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  .title-block { width:100%; text-align:center; margin-bottom:10px; }
+  .title-block h1 { font-family:'Playfair Display',serif; color:#e9c176; font-size:34px; letter-spacing:8px; }
+  .title-block p { color:#d1c5b4; font-size:12px; letter-spacing:3px; margin-top:8px; }
+
+  .phone {
+    width:340px; height:720px;
+    background:#111317;
+    border-radius:42px;
+    border:10px solid #1c1d21;
+    box-shadow:0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(233,193,118,.08);
+    overflow:hidden;
+    position:relative;
+  }
+  .screen { width:100%; height:100%; position:relative; overflow:hidden; padding:26px 22px; }
+  .glow1 { position:absolute; top:-90px; left:-90px; width:300px; height:300px; border-radius:50%; background:rgba(233,193,118,.06); }
+  .glow2 { position:absolute; bottom:-70px; right:-70px; width:220px; height:220px; border-radius:50%; background:rgba(233,193,118,.04); }
+  .content { position:relative; z-index:2; }
+
+  .label { font-size:10px; letter-spacing:3px; color:#d1c5b4; font-weight:600; }
+  .gold-line { width:46px; height:1.5px; background:#e9c176; opacity:.6; margin:12px 0; }
+  .glass { background:rgba(255,255,255,.03); border:1px solid rgba(233,193,118,.10); border-radius:18px; }
+  .btn-gold {
+    background:linear-gradient(90deg,#e9c176,#c9952e);
+    color:#111317; font-weight:800; letter-spacing:2px; font-size:13px;
+    text-align:center; padding:15px; border-radius:999px;
+  }
+
+  .brand { font-family:'Playfair Display',serif; font-size:40px; letter-spacing:9px; color:#e9c176; text-align:center; }
+  .tagline { text-align:center; font-size:10px; letter-spacing:3px; color:#d1c5b4; font-weight:600; }
+  .login-card { padding:26px 22px; margin-top:26px; }
+  .toggle { display:flex; background:#1e2023; border-radius:12px; padding:3px; margin-bottom:24px; }
+  .toggle div { flex:1; text-align:center; padding:9px; font-size:12px; font-weight:600; border-radius:9px; color:#4e4639; }
+  .toggle .active { background:#282a2e; color:#e9c176; }
+  .field-label { font-size:10px; letter-spacing:2px; color:#d1c5b4; font-weight:600; margin:18px 0 8px; }
+  .underline { border-bottom:1px solid #e9c176; padding-bottom:8px; color:#e2e2e7; font-size:15px; display:flex; gap:8px; align-items:center; }
+  .underline span { color:#e9c176; }
+  .pin-row { display:flex; gap:12px; justify-content:center; margin:14px 0 24px; }
+  .pin { width:54px; height:64px; border:1.5px solid #4e4639; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:26px; color:#e9c176; }
+  .pin.filled { border-color:#e9c176; background:rgba(233,193,118,.08); }
+  .hint { font-size:11px; color:#4e4639; margin-top:16px; }
+
+  .dash-head { display:flex; justify-content:space-between; align-items:flex-end; padding-top:20px; }
+  .brand-sm { font-family:'Playfair Display',serif; font-size:26px; letter-spacing:7px; color:#e9c176; }
+  .avatar { width:42px; height:42px; border-radius:50%; background:#282a2e; border:1.5px solid rgba(233,193,118,.15); display:flex; align-items:center; justify-content:center; color:#e9c176; font-weight:700; font-size:14px; }
+  .welcome { font-family:'Playfair Display',serif; font-size:26px; color:#e2e2e7; margin-top:24px; }
+  .welcome i { color:#e9c176; }
+  .date { font-size:12px; color:#d1c5b4; margin-top:4px; }
+  .kpi-row { display:flex; gap:9px; margin-top:22px; }
+  .kpi { flex:1; padding:14px 8px; text-align:center; }
+  .kpi .v { font-family:'Playfair Display',serif; font-size:28px; }
+  .kpi .l { font-size:9px; color:#d1c5b4; margin-top:4px; }
+  .search { display:flex; align-items:center; gap:8px; padding:12px 16px; margin-top:18px; border-radius:999px; color:#4e4639; font-size:13px; }
+  .sec-label { font-size:10px; letter-spacing:3px; color:#d1c5b4; font-weight:600; margin:22px 0 14px; }
+  .vcard { display:flex; align-items:center; gap:12px; padding:14px; margin-bottom:10px; }
+  .vdot { width:10px; height:10px; border-radius:50%; }
+  .vinfo { flex:1; }
+  .vname { font-family:'Playfair Display',serif; font-size:15px; color:#e2e2e7; }
+  .vmeta { font-size:11px; color:#d1c5b4; margin-top:2px; }
+  .badge { font-size:9px; font-weight:600; padding:4px 9px; border-radius:999px; border:1px solid; }
+  .navbar { position:absolute; bottom:0; left:0; right:0; height:64px; background:rgba(17,19,23,.97); border-top:1px solid rgba(233,193,118,.15); display:flex; justify-content:space-around; align-items:center; }
+  .nav-item { font-size:9px; color:#4e4639; text-align:center; font-weight:600; }
+  .nav-item.active { color:#e9c176; }
+  .nav-dot { width:5px; height:5px; border-radius:50%; margin:0 auto 5px; background:currentColor; }
+</style>
+</head>
+<body>
+  <div class="title-block">
+    <h1>FABLUXE</h1>
+    <p>PREMIUM LUXURY REDESIGN · PREVIEW</p>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div class="phone">
+    <div class="screen">
+      <div class="glow1"></div><div class="glow2"></div>
+      <div class="content">
+        <div style="margin-top:30px">
+          <div class="brand">FABLUXE</div>
+          <div class="gold-line" style="margin:12px auto"></div>
+          <div class="tagline">INTERIOR HOME SOLUTIONS</div>
+        </div>
+        <div class="glass login-card">
+          <div class="toggle">
+            <div class="active">⊙ Staff Login</div>
+            <div>⛨ Admin Login</div>
+          </div>
+          <div class="field-label">YOUR NAME</div>
+          <div class="underline"><span>⊙</span> Sharath</div>
+          <div class="field-label">4-DIGIT PIN</div>
+          <div class="pin-row">
+            <div class="pin filled">•</div><div class="pin filled">•</div>
+            <div class="pin filled">•</div><div class="pin">|</div>
+          </div>
+          <div class="btn-gold">↪ SECURE ACCESS</div>
+          <div class="hint">ⓘ Your name and PIN are set by your admin.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD SCREEN -->
+  <div class="phone">
+    <div class="screen">
+      <div class="glow1"></div><div class="glow2" style="top:300px"></div>
+      <div class="content">
+        <div class="dash-head">
+          <div>
+            <div class="brand-sm">FABLUXE</div>
+            <div class="gold-line"></div>
+          </div>
+          <div class="avatar">SH</div>
+        </div>
+        <div class="label" style="margin-top:22px">OPERATIONAL OVERVIEW</div>
+        <div class="welcome">Good Morning, <i>Sharath.</i></div>
+        <div class="date">Sunday, 14 June 2026</div>
+
+        <div class="kpi-row">
+          <div class="glass kpi"><div class="v" style="color:#e9c176">12</div><div class="l">Today's Check-ins</div></div>
+          <div class="glass kpi"><div class="v" style="color:#d7c4a5">48</div><div class="l">This Week</div></div>
+          <div class="glass kpi"><div class="v" style="color:#ffb4ab">06</div><div class="l">Follow-Ups</div></div>
+        </div>
+
+        <div class="btn-gold" style="margin-top:18px">⊕ NEW CHECK-IN</div>
+        <div class="glass search">⌕ Search visitors...</div>
+
+        <div class="sec-label">RECENT CHECK-INS</div>
+        <div class="glass vcard">
+          <div class="vdot" style="background:#d7c4a5"></div>
+          <div class="vinfo"><div class="vname">Arjun Mehta</div><div class="vmeta">+91 98765 43210 · 02:30 PM</div></div>
+          <div class="badge" style="color:#d7c4a5;border-color:#d7c4a5">NEW</div>
+        </div>
+        <div class="glass vcard">
+          <div class="vdot" style="background:#a8d5a2"></div>
+          <div class="vinfo"><div class="vname">Priya Sharma</div><div class="vmeta">+91 87654 32109 · 01:10 PM</div></div>
+          <div class="badge" style="color:#a8d5a2;border-color:#a8d5a2">CONVERTED</div>
+        </div>
+        <div class="glass vcard">
+          <div class="vdot" style="background:#f5d78e"></div>
+          <div class="vinfo"><div class="vname">Ravi Kumar</div><div class="vmeta">+91 76543 21098 · 11:45 AM</div></div>
+          <div class="badge" style="color:#f5d78e;border-color:#f5d78e">FOLLOW UP</div>
+        </div>
+      </div>
+      <div class="navbar">
+        <div class="nav-item active"><div class="nav-dot"></div>Dashboard</div>
+        <div class="nav-item"><div class="nav-dot"></div>Check In</div>
+        <div class="nav-item"><div class="nav-dot"></div>Visitors</div>
+        <div class="nav-item"><div class="nav-dot"></div>Follow Up</div>
+        <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

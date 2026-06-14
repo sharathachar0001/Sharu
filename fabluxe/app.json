@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "FABLUXE",
+    "slug": "fabluxe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#111317",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fabluxe.visitor"
+    },
+    "android": {
+      "package": "com.fabluxe.visitor",
+      "adaptiveIcon": {
+        "backgroundColor": "#111317",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
